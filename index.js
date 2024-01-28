@@ -1,23 +1,31 @@
 const express = require("express");
 const app = express();
 const PORT = process.env.PORT || 3000;
+const { createServer } = require("node:http");
+const { Server } = require("socket.io");
+const { join } = require("node:path");
+const server = createServer(app);
+const io = new Server(server);
 
-app.get("/check", (req, res) => {
-  res.json({
-    data: [
-      { name: "Alice", age: 28 },
-      { name: "Bob", age: 34 },
-      { name: "Charlie", age: 22 },
-      { name: "Diana", age: 45 },
-      { name: "Eric", age: 30 },
-      { name: "Fiona", age: 19 },
-      { name: "George", age: 37 },
-      { name: "Helen", age: 25 },
-      { name: "Ivan", age: 41 },
-      { name: "Jasmine", age: 29 },
-    ],
-  });
+app.get("/", (req, res) => {
+  res.sendFile(join(__dirname, 'index.html'));
 });
-app.listen(PORT, () => {
-  console.log("server running on ", PORT);
+
+io.on('connection', (socket) => {
+    console.log('a user connected');
+    socket.on('chat message', (msg) => {
+        console.log("message", msg);
+    })
+    socket.on('chat message', (msg) => {
+        io.emit('chat message', msg);
+    })
+    socket.on('disconnect', () => {
+        console.log("user disconnected");
+    })
+
+})
+
+
+server.listen(PORT, () => {
+  console.log("server running on http://localhost:%s", PORT);
 });
